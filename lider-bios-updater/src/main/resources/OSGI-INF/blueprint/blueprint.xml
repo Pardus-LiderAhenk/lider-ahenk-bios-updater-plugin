@@ -24,25 +24,21 @@
 		<property name="userOriented" value="${plugin.user.oriented}" />
 		<property name="policyPlugin" value="${plugin.policy.plugin}" />
 		<property name="xbased" value="${plugin.x.based}" />
-		<!-- Plugin distribution -->
-		<!-- There can be any number of these properties as long as related fields 
-			exist in PluginInfoImpl: -->
-		<property name="distroHost" value="${plugin.distro.host}" />
-		<property name="distroUsername" value="${plugin.distro.username}" />
-		<property name="distroPassword" value="${plugin.distro.password}" />
-		<property name="distroPath" value="${plugin.distro.path}" />
 	</bean>
 
 	<!-- ICommand implementation is used to process a task execution -->
-	<service ref="BiosUpdaterCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-	<bean id="BiosUpdaterCommand" class="tr.org.liderahenk.biosupdater.commands.BiosUpdaterCommand">
+	<service ref="ReadBiosInfoCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="ReadBiosInfoCommand" class="tr.org.liderahenk.biosupdater.commands.ReadBiosInfoCommand">
 		<property name="resultFactory" ref="resultFactory" />
 		<property name="pluginInfo" ref="pluginInfoImpl" />
-		<property name="logService" ref="logService" />
-		<property name="pluginDbService" ref="pluginDbService" />
 	</bean>
 
-	<reference id="pluginDbService" interface="tr.org.liderahenk.lider.core.api.persistence.IPluginDbService" />
-	<reference id="logService" interface="tr.org.liderahenk.lider.core.api.log.IOperationLogService" />
+	<!-- ICommand implementation is used to process a task execution -->
+	<service ref="UpdateBiosCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="UpdateBiosCommand" class="tr.org.liderahenk.biosupdater.commands.UpdateBiosCommand">
+		<property name="resultFactory" ref="resultFactory" />
+		<property name="pluginInfo" ref="pluginInfoImpl" />
+	</bean>
+
 	<reference id="resultFactory" interface="tr.org.liderahenk.lider.core.api.service.ICommandResultFactory" />
 </blueprint>
