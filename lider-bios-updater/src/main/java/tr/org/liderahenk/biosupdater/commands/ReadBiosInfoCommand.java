@@ -55,4 +55,12 @@ public class ReadBiosInfoCommand implements ICommand {
 		return true;
 	}
 
+	public void setResultFactory(ICommandResultFactory resultFactory) {
+		this.resultFactory = resultFactory;
+	}
+
+	public void setPluginInfo(IPluginInfo pluginInfo) {
+		this.pluginInfo = pluginInfo;
+	}
+
 }
