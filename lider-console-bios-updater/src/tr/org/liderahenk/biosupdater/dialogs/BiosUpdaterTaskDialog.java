@@ -1,5 +1,6 @@
 package tr.org.liderahenk.biosupdater.dialogs;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +23,8 @@ import tr.org.liderahenk.biosupdater.i18n.Messages;
 import tr.org.liderahenk.biosupdater.utils.PropertyNames;
 import tr.org.liderahenk.liderconsole.core.constants.LiderConstants;
 import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
+import tr.org.liderahenk.liderconsole.core.ldap.enums.DNType;
+import tr.org.liderahenk.liderconsole.core.rest.requests.TaskRequest;
 import tr.org.liderahenk.liderconsole.core.rest.responses.IResponse;
 import tr.org.liderahenk.liderconsole.core.rest.utils.TaskUtils;
 import tr.org.liderahenk.liderconsole.core.utils.SWTResourceManager;
@@ -45,9 +48,11 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 	private Text txtBoardVersion;
 	private Text txtBoardSerialNumber;
 	private Text txtBoardAssetTag;
+	private String dn;
 
 	public BiosUpdaterTaskDialog(Shell parentShell, String dn) {
 		super(parentShell, dn);
+		this.dn = dn;
 	}
 
 	@Override
@@ -160,7 +165,16 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 	private void readBiosInfo() {
 		IResponse response = null;
 		try {
-			response = TaskUtils.execute("bios-updater", "1.0.0", "READ_BIOS_INFO");
+			TaskRequest task = new TaskRequest();
+			task.setCommandId("READ_BIOS_INFO");
+			ArrayList<String> dnList = new ArrayList<String>();
+			dnList.add(this.dn);
+			task.setDnList(dnList);
+			task.setDnType(DNType.AHENK);
+			task.setPluginName("bios-updater");
+			task.setPluginVersion("1.0.0");
+			task.setParameterMap(new HashMap<String, Object>());
+			response = TaskUtils.execute(task);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			Notifier.error(null, Messages.getString("ERROR_ON_LIST"));

@@ -75,5 +75,5 @@ class ReadBiosInfo(AbstractPlugin):
 
 def handle_task(task, context):
     print('Task Data : {}'.format(str(task)))
-    my_task = ReadBiosInfo(task, context)
-    my_task.handle_task()
+    handler = ReadBiosInfo(task, context)
+    handler.handle_task()
