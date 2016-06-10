@@ -1,10 +1,21 @@
 package tr.org.liderahenk.biosupdater.dialogs;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -12,9 +23,15 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,10 +42,10 @@ import tr.org.liderahenk.liderconsole.core.constants.LiderConstants;
 import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
 import tr.org.liderahenk.liderconsole.core.ldap.enums.DNType;
 import tr.org.liderahenk.liderconsole.core.rest.requests.TaskRequest;
-import tr.org.liderahenk.liderconsole.core.rest.responses.IResponse;
 import tr.org.liderahenk.liderconsole.core.rest.utils.TaskUtils;
 import tr.org.liderahenk.liderconsole.core.utils.SWTResourceManager;
 import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
+import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotification;
 
 /**
  * Task execution dialog for bios-updater plugin.
@@ -40,6 +57,8 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 
 	private static final Logger logger = LoggerFactory.getLogger(BiosUpdaterTaskDialog.class);
 
+	private IEventBroker eventBroker = (IEventBroker) PlatformUI.getWorkbench().getService(IEventBroker.class);
+
 	private Text txtBiosVendor;
 	private Text txtBiosVersion;
 	private Text txtBiosReleaseDate;
@@ -48,12 +67,75 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 	private Text txtBoardVersion;
 	private Text txtBoardSerialNumber;
 	private Text txtBoardAssetTag;
+	private Text txtUpdateUrl;
+	private Button btnBackupExisting;
 	private String dn;
 
 	public BiosUpdaterTaskDialog(Shell parentShell, String dn) {
 		super(parentShell, dn);
 		this.dn = dn;
+		eventBroker.subscribe(getPluginName().toUpperCase(Locale.ENGLISH), eventHandler);
 	}
+
+	private EventHandler eventHandler = new EventHandler() {
+		@Override
+		public void handleEvent(final Event event) {
+			Job job = new Job("TASK") {
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					monitor.beginTask("BIOS_INFO", 100);
+					try {
+						TaskStatusNotification taskStatus = (TaskStatusNotification) event
+								.getProperty("org.eclipse.e4.data");
+						byte[] data = taskStatus.getResult().getResponseData();
+						final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
+								new TypeReference<HashMap<String, Object>>() {
+						});
+
+						if (responseData != null && !responseData.isEmpty()) {
+							Display.getDefault().asyncExec(new Runnable() {
+								@Override
+								public void run() {
+									Object val = responseData.get(PropertyNames.BIOS_VENDOR);
+									txtBiosVendor.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
+									val = responseData.get(PropertyNames.BIOS_VERSION);
+									txtBiosVersion.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
+									val = responseData.get(PropertyNames.BIOS_RELEASE_DATE);
+									txtBiosReleaseDate
+											.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
+									val = responseData.get(PropertyNames.BOARD_MANUFACTURER);
+									txtBoardManufacturer
+											.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
+									val = responseData.get(PropertyNames.BOARD_PRODUCT_NAME);
+									txtBoardProductName
+											.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
+									val = responseData.get(PropertyNames.BOARD_VERSION);
+									txtBoardVersion.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
+									val = responseData.get(PropertyNames.BOARD_SERIAL_NUMBER);
+									txtBoardSerialNumber
+											.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
+									val = responseData.get(PropertyNames.BOARD_ASSET_TAG);
+									txtBoardAssetTag.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
+								}
+							});
+						}
+
+					} catch (Exception e) {
+						logger.error(e.getMessage(), e);
+						Notifier.error("", Messages.getString("UNEXPECTED_ERROR_READING_BIOS_INFO"));
+					}
+
+					monitor.worked(100);
+					monitor.done();
+
+					return Status.OK_STATUS;
+				}
+			};
+
+			job.setUser(true);
+			job.schedule();
+		}
+	};
 
 	@Override
 	public String createTitle() {
@@ -144,6 +226,21 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 		lblBiosUpdate.setFont(SWTResourceManager.getFont("Sans", 9, SWT.BOLD));
 		lblBiosUpdate.setText(Messages.getString("UPDATE_BIOS"));
 
+		Link lnsupportedHardware = new Link(composite, SWT.NONE);
+		lnsupportedHardware.setText(Messages.getString("SUPPORTED_HARDWARE"));
+		lnsupportedHardware.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				try {
+					PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(e.text));
+				} catch (PartInitException e1) {
+					logger.error(e1.getMessage(), e1);
+				} catch (MalformedURLException e2) {
+					logger.error(e2.getMessage(), e2);
+				}
+			}
+		});
+
 		innerComp = new Composite(composite, SWT.NONE);
 		innerComp.setLayout(new GridLayout(2, false));
 		innerComp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -151,10 +248,10 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 		Label lblUpdateUrl = new Label(innerComp, SWT.NONE);
 		lblUpdateUrl.setText(Messages.getString("BIOS_UPDATE_URL"));
 
-		Text txtUpdateUrl = new Text(innerComp, SWT.BORDER);
+		txtUpdateUrl = new Text(innerComp, SWT.BORDER);
 		txtUpdateUrl.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
-		Button btnBackupExisting = new Button(innerComp, SWT.CHECK);
+		btnBackupExisting = new Button(innerComp, SWT.CHECK);
 		btnBackupExisting.setText(Messages.getString("BACKUP_EXISTING"));
 		new Label(innerComp, SWT.NONE);
 
@@ -163,7 +260,6 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 	}
 
 	private void readBiosInfo() {
-		IResponse response = null;
 		try {
 			TaskRequest task = new TaskRequest();
 			task.setCommandId("READ_BIOS_INFO");
@@ -174,42 +270,24 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 			task.setPluginName("bios-updater");
 			task.setPluginVersion("1.0.0");
 			task.setParameterMap(new HashMap<String, Object>());
-			response = TaskUtils.execute(task);
+			TaskUtils.execute(task);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			Notifier.error(null, Messages.getString("ERROR_ON_LIST"));
-		}
-		if (response != null) {
-			Map<String, Object> data = response.getResultMap();
-			if (data != null && !data.isEmpty()) {
-				Object val = data.get(PropertyNames.BIOS_VENDOR);
-				txtBiosVendor.setText(val != null ? val.toString() : "");
-				val = data.get(PropertyNames.BIOS_VERSION);
-				txtBiosVersion.setText(val != null ? val.toString() : "");
-				val = data.get(PropertyNames.BIOS_RELEASE_DATE);
-				txtBiosReleaseDate.setText(val != null ? val.toString() : "");
-				val = data.get(PropertyNames.BOARD_MANUFACTURER);
-				txtBoardManufacturer.setText(val != null ? val.toString() : "");
-				val = data.get(PropertyNames.BOARD_PRODUCT_NAME);
-				txtBoardProductName.setText(val != null ? val.toString() : "");
-				val = data.get(PropertyNames.BOARD_VERSION);
-				txtBoardVersion.setText(val != null ? val.toString() : "");
-				val = data.get(PropertyNames.BOARD_SERIAL_NUMBER);
-				txtBoardSerialNumber.setText(val != null ? val.toString() : "");
-				val = data.get(PropertyNames.BOARD_ASSET_TAG);
-				txtBoardAssetTag.setText(val != null ? val.toString() : "");
-			}
 		}
 	}
 
 	@Override
 	public boolean validateBeforeExecution() {
-		return true;
+		return txtUpdateUrl.getText() != null && !txtUpdateUrl.getText().isEmpty();
 	}
 
 	@Override
 	public Map<String, Object> getParameterMap() {
-		return new HashMap<String, Object>();
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put("url", txtUpdateUrl.getText());
+		map.put("backupExisting", btnBackupExisting.getSelection());
+		return map;
 	}
 
 	@Override
