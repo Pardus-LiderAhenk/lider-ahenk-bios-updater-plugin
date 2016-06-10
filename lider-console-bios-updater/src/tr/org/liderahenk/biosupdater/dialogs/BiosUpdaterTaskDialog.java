@@ -40,6 +40,7 @@ import tr.org.liderahenk.biosupdater.i18n.Messages;
 import tr.org.liderahenk.biosupdater.utils.PropertyNames;
 import tr.org.liderahenk.liderconsole.core.constants.LiderConstants;
 import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
+import tr.org.liderahenk.liderconsole.core.exceptions.ValidationException;
 import tr.org.liderahenk.liderconsole.core.ldap.enums.DNType;
 import tr.org.liderahenk.liderconsole.core.rest.requests.TaskRequest;
 import tr.org.liderahenk.liderconsole.core.rest.utils.TaskUtils;
@@ -278,8 +279,10 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 	}
 
 	@Override
-	public boolean validateBeforeExecution() {
-		return txtUpdateUrl.getText() != null && !txtUpdateUrl.getText().isEmpty();
+	public void validateBeforeExecution() throws ValidationException {
+		if (txtUpdateUrl.getText() == null || txtUpdateUrl.getText().isEmpty()) {
+			throw new ValidationException(Messages.getString("URL_CANNOT_BE_EMPTY"));
+		}
 	}
 
 	@Override
