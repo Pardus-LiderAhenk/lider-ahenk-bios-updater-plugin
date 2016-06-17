@@ -10,5 +10,5 @@ Package: ahenk-bios-updater
 Version: 1.0.0
 Architecture: any
 Depends: python3 (>= 3), dmidecode, flashrom, wget
-Description: LiderAhenk BIOS updater plugin
+Description: Lider Ahenk BIOS update plugin
 
