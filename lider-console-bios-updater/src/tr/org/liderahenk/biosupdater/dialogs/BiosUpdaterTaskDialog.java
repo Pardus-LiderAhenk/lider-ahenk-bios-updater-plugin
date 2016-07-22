@@ -70,11 +70,9 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 	private Text txtBoardAssetTag;
 	private Text txtUpdateUrl;
 	private Button btnBackupExisting;
-	private String dn;
 
 	public BiosUpdaterTaskDialog(Shell parentShell, String dn) {
 		super(parentShell, dn);
-		this.dn = dn;
 		eventBroker.subscribe(getPluginName().toUpperCase(Locale.ENGLISH), eventHandler);
 	}
 
@@ -264,9 +262,7 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 		try {
 			TaskRequest task = new TaskRequest();
 			task.setCommandId("READ_BIOS_INFO");
-			ArrayList<String> dnList = new ArrayList<String>();
-			dnList.add(this.dn);
-			task.setDnList(dnList);
+			task.setDnList(new ArrayList<String>(getDnSet()));
 			task.setDnType(DNType.AHENK);
 			task.setPluginName("bios-updater");
 			task.setPluginVersion("1.0.0");
