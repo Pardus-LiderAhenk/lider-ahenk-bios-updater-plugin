@@ -4,7 +4,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -13,7 +12,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -58,8 +56,6 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 
 	private static final Logger logger = LoggerFactory.getLogger(BiosUpdaterTaskDialog.class);
 
-	private IEventBroker eventBroker = (IEventBroker) PlatformUI.getWorkbench().getService(IEventBroker.class);
-
 	private Text txtBiosVendor;
 	private Text txtBiosVersion;
 	private Text txtBiosReleaseDate;
@@ -73,68 +69,8 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 
 	public BiosUpdaterTaskDialog(Shell parentShell, String dn) {
 		super(parentShell, dn);
-		eventBroker.subscribe(getPluginName().toUpperCase(Locale.ENGLISH), eventHandler);
+		subscribeEventHandler(taskStatusNotificationHandler);
 	}
-
-	private EventHandler eventHandler = new EventHandler() {
-		@Override
-		public void handleEvent(final Event event) {
-			Job job = new Job("TASK") {
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					monitor.beginTask("BIOS_INFO", 100);
-					try {
-						TaskStatusNotification taskStatus = (TaskStatusNotification) event
-								.getProperty("org.eclipse.e4.data");
-						byte[] data = taskStatus.getResult().getResponseData();
-						final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
-								new TypeReference<HashMap<String, Object>>() {
-						});
-
-						if (responseData != null && !responseData.isEmpty()) {
-							Display.getDefault().asyncExec(new Runnable() {
-								@Override
-								public void run() {
-									Object val = responseData.get(PropertyNames.BIOS_VENDOR);
-									txtBiosVendor.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
-									val = responseData.get(PropertyNames.BIOS_VERSION);
-									txtBiosVersion.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
-									val = responseData.get(PropertyNames.BIOS_RELEASE_DATE);
-									txtBiosReleaseDate
-											.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
-									val = responseData.get(PropertyNames.BOARD_MANUFACTURER);
-									txtBoardManufacturer
-											.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
-									val = responseData.get(PropertyNames.BOARD_PRODUCT_NAME);
-									txtBoardProductName
-											.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
-									val = responseData.get(PropertyNames.BOARD_VERSION);
-									txtBoardVersion.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
-									val = responseData.get(PropertyNames.BOARD_SERIAL_NUMBER);
-									txtBoardSerialNumber
-											.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
-									val = responseData.get(PropertyNames.BOARD_ASSET_TAG);
-									txtBoardAssetTag.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
-								}
-							});
-						}
-
-					} catch (Exception e) {
-						logger.error(e.getMessage(), e);
-						Notifier.error("", Messages.getString("UNEXPECTED_ERROR_READING_BIOS_INFO"));
-					}
-
-					monitor.worked(100);
-					monitor.done();
-
-					return Status.OK_STATUS;
-				}
-			};
-
-			job.setUser(true);
-			job.schedule();
-		}
-	};
 
 	@Override
 	public String createTitle() {
@@ -293,6 +229,67 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 	public String getCommandId() {
 		return "UPDATE_BIOS";
 	}
+	
+	private EventHandler taskStatusNotificationHandler = new EventHandler() {
+		@Override
+		public void handleEvent(final Event event) {
+			Job job = new Job("TASK") {
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					monitor.beginTask("BIOS_INFO", 100);
+					try {
+						TaskStatusNotification taskStatus = (TaskStatusNotification) event
+								.getProperty("org.eclipse.e4.data");
+						byte[] data = taskStatus.getResult().getResponseData();
+						final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
+								new TypeReference<HashMap<String, Object>>() {
+								});
+
+						if (responseData != null && !responseData.isEmpty()) {
+							Display.getDefault().asyncExec(new Runnable() {
+								@Override
+								public void run() {
+									Object val = responseData.get(PropertyNames.BIOS_VENDOR);
+									txtBiosVendor.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
+									val = responseData.get(PropertyNames.BIOS_VERSION);
+									txtBiosVersion.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
+									val = responseData.get(PropertyNames.BIOS_RELEASE_DATE);
+									txtBiosReleaseDate
+											.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
+									val = responseData.get(PropertyNames.BOARD_MANUFACTURER);
+									txtBoardManufacturer
+											.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
+									val = responseData.get(PropertyNames.BOARD_PRODUCT_NAME);
+									txtBoardProductName
+											.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
+									val = responseData.get(PropertyNames.BOARD_VERSION);
+									txtBoardVersion.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
+									val = responseData.get(PropertyNames.BOARD_SERIAL_NUMBER);
+									txtBoardSerialNumber
+											.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
+									val = responseData.get(PropertyNames.BOARD_ASSET_TAG);
+									txtBoardAssetTag.setText(val != null ? val.toString().replaceAll("\\s+", "") : "");
+								}
+							});
+						}
+
+					} catch (Exception e) {
+						logger.error(e.getMessage(), e);
+						Notifier.error("", Messages.getString("UNEXPECTED_ERROR_READING_BIOS_INFO"));
+					}
+
+					monitor.worked(100);
+					monitor.done();
+
+					return Status.OK_STATUS;
+				}
+			};
+
+			job.setUser(true);
+			job.schedule();
+		}
+	};
+
 
 	@Override
 	public String getPluginName() {

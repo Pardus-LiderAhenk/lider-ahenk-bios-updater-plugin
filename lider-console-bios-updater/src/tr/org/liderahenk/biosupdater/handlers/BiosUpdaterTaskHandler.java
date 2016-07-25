@@ -11,7 +11,7 @@ public class BiosUpdaterTaskHandler extends SingleSelectionHandler {
 	public void executeWithDn(String dn) {
 		BiosUpdaterTaskDialog dialog = new BiosUpdaterTaskDialog(Display.getDefault().getActiveShell(), dn);
 		dialog.create();
-		dialog.open();
+		dialog.openWithEventBroker();
 	}
 
 }
