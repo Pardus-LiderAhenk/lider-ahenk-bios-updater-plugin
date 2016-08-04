@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -67,8 +68,8 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 	private Text txtUpdateUrl;
 	private Button btnBackupExisting;
 
-	public BiosUpdaterTaskDialog(Shell parentShell, String dn) {
-		super(parentShell, dn);
+	public BiosUpdaterTaskDialog(Shell parentShell, Set<String> dnSet) {
+		super(parentShell, dnSet);
 		subscribeEventHandler(taskStatusNotificationHandler);
 	}
 
@@ -198,7 +199,9 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 		try {
 			TaskRequest task = new TaskRequest();
 			task.setCommandId("READ_BIOS_INFO");
-			task.setDnList(new ArrayList<String>(getDnSet()));
+			ArrayList<String> dnList = new ArrayList<String>();
+			dnList.add(getDnSet().iterator().next());
+			task.setDnList(dnList);
 			task.setDnType(DNType.AHENK);
 			task.setPluginName("bios-updater");
 			task.setPluginVersion("1.0.0");
@@ -229,7 +232,7 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 	public String getCommandId() {
 		return "UPDATE_BIOS";
 	}
-	
+
 	private EventHandler taskStatusNotificationHandler = new EventHandler() {
 		@Override
 		public void handleEvent(final Event event) {
@@ -289,7 +292,6 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 			job.schedule();
 		}
 	};
-
 
 	@Override
 	public String getPluginName() {

@@ -7,6 +7,7 @@ https://www.python.org/dev/peps/pep-0008/
 """
 
 from base.plugin.abstract_plugin import AbstractPlugin
+import json
 
 
 class ReadBiosInfo(AbstractPlugin):
@@ -71,7 +72,7 @@ class ReadBiosInfo(AbstractPlugin):
             message = 'BIOS bilgileri okunurken hata oluştu.'
 
         self.context.create_response(code=code, message=message,
-                                     data=data, content_type=self.get_content_type().APPLICATION_JSON.value)
+                                     data=json.dumps(data), content_type=self.get_content_type().APPLICATION_JSON.value)
 
 
 def handle_task(task, context):

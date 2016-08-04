@@ -41,9 +41,7 @@ class UpdateBios(AbstractPlugin):
         (result_code, p_out, p_err) = self.execute("wget {} -O /tmp/newbios.rom".format(url), shell=True)
         if result_code == 0:
             # Flash downloaded file
-            # TODO test makinasıyla test edilecek - emre
-            #(result_code, p_out, p_err) = self.execute("flashrom -w /tmp/newbios.rom", shell=True)
-            (result_code, p_out, p_err) = self.execute("ls -altrh /tmp/newbios.rom", shell=True)
+            (result_code, p_out, p_err) = self.execute("flashrom -w /tmp/newbios.rom", shell=True)
             if result_code == 0:
                 message += "BIOS başarıyla güncellendi. "
             else:
