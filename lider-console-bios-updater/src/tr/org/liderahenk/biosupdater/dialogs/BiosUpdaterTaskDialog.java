@@ -209,7 +209,7 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 			TaskRestUtils.execute(task);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			Notifier.error(null, Messages.getString("ERROR_ON_LIST"));
+			Notifier.error(null, Messages.getString("ERROR_ON_FETCHING_BIOS_INFO"));
 		}
 	}
 
