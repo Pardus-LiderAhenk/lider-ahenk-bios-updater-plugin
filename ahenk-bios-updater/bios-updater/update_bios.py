@@ -7,8 +7,8 @@ https://www.python.org/dev/peps/pep-0008/
 """
 
 from base.plugin.abstract_plugin import AbstractPlugin
-from base.model.enum.ContentType import ContentType
 from datetime import datetime
+
 
 class UpdateBios(AbstractPlugin):
     def __init__(self, data, context):
@@ -57,7 +57,7 @@ class UpdateBios(AbstractPlugin):
             code = self.message_code.TASK_ERROR.value
 
         self.context.create_response(code=code, message=message,
-                                     content_type=ContentType.APPLICATION_JSON.value)
+                                     content_type=self.get_content_type().APPLICATION_JSON.value)
 
 
 def handle_task(task, context):
