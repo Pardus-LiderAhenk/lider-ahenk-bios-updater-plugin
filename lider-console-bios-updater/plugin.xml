@@ -21,23 +21,7 @@
        <handler
             class="tr.org.liderahenk.biosupdater.handlers.BiosUpdaterTaskHandler"
             commandId="tr.org.liderahenk.liderconsole.commands.BiosUpdaterTask">
-           <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
-		   <!-- <enabledWhen>
-				<and>
-		          <with
-		                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.available">
-		             <equals
-		                   value="true">
-		             </equals>
-		          </with>
-				<with
-	                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-	             	<equals
-		                   value="true">
-		            </equals>
-	          	</with>
-		       </and>
-		    </enabledWhen> -->        
+    
       </handler>
   </extension>
   
@@ -52,33 +36,28 @@
                   commandId="tr.org.liderahenk.liderconsole.commands.BiosUpdaterTask"
                   id="tr.org.liderahenk.liderconsole.commands.BiosUpdaterTask"
                   tooltip="%command.task">
-                  <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
-				  <!-- <visibleWhen>
-					   <and>
-			                <iterate operator="or">		
-			                	<or>
-							  	<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isSearchSelected">
-						             <equals
-						                   value="true">
-						             </equals>
-					          	</with>
-					          	<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isEntrySelected">
-						             <equals
-						                   value="true">
-						             </equals>
-					          	</with>
-					        	</or>
-					        </iterate>
+                  	<visibleWhen>
+                  	<and>
 							<with
-				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
+				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.available">
 				             	<equals
 					                   value="true">
 					            </equals>
 				          	</with>
-					    </and>
-					</visibleWhen> -->               
+							<with
+				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isLdapUserSelected">
+				             	<equals
+					                   value="false">
+					            </equals>
+				          	</with>
+							<with
+				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isLdapGroupSelected">
+				             	<equals
+					                   value="false">
+					            </equals>
+				          	</with>
+			          	</and>
+					</visibleWhen>
            		</command>
 		</menuContribution>
   </extension>
