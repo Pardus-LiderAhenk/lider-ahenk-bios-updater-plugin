@@ -19,7 +19,6 @@ class UpdateBios(AbstractPlugin):
         self.message_code = self.get_message_code()
 
     def handle_task(self):
-        print('Handling task')
 
         url = self.data['url']
         backup_existing = self.data['backupExisting']

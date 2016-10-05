@@ -19,50 +19,50 @@ class ReadBiosInfo(AbstractPlugin):
         self.message_code = self.get_message_code()
 
     def handle_task(self):
-        self.logger.debug('[ReadBiosInfo] Handling task')
+        self.logger.debug('Handling task')
         data = {}
         # BIOS info
         (result_code, p_out, p_err) = self.execute("dmidecode --string bios-vendor")
         if result_code == 0:
             data['bios-vendor'] = str(p_out)
         else:
-            self.logger.error('[ReadBiosInfo] Error occurred while retrieving bios-vendor')
+            self.logger.error('Error occurred while retrieving bios-vendor')
         (result_code, p_out, p_err) = self.execute("dmidecode --string bios-version")
         if result_code == 0:
             data['bios-version'] = str(p_out)
         else:
-            self.logger.error('[ReadBiosInfo] Error occurred while retrieving bios-version')
+            self.logger.error('Error occurred while retrieving bios-version')
         (result_code, p_out, p_err) = self.execute("dmidecode --string bios-release-date")
         if result_code == 0:
             data['bios-release-date'] = str(p_out)
         else:
-            self.logger.error('[ReadBiosInfo] Error occurred while retrieving bios-release-date')
+            self.logger.error('Error occurred while retrieving bios-release-date')
         # Motherboard info
         (result_code, p_out, p_err) = self.execute("dmidecode --string baseboard-manufacturer")
         if result_code == 0:
             data['baseboard-manufacturer'] = str(p_out)
         else:
-            self.logger.error('[ReadBiosInfo] Error occurred while retrieving baseboard-manufacturer')
+            self.logger.error('Error occurred while retrieving baseboard-manufacturer')
         (result_code, p_out, p_err) = self.execute("dmidecode --string baseboard-product-name")
         if result_code == 0:
             data['baseboard-product-name'] = str(p_out)
         else:
-            self.logger.error('[ReadBiosInfo] Error occurred while retrieving baseboard-product-name')
+            self.logger.error('Error occurred while retrieving baseboard-product-name')
         (result_code, p_out, p_err) = self.execute("dmidecode --string baseboard-version")
         if result_code == 0:
             data['baseboard-version'] = str(p_out)
         else:
-            self.logger.error('[ReadBiosInfo] Error occurred while retrieving baseboard-version')
+            self.logger.error('Error occurred while retrieving baseboard-version')
         (result_code, p_out, p_err) = self.execute("dmidecode --string baseboard-serial-number")
         if result_code == 0:
             data['baseboard-serial-number'] = str(p_out)
         else:
-            self.logger.error('[ReadBiosInfo] Error occurred while retrieving baseboard-serial-number')
+            self.logger.error('Error occurred while retrieving baseboard-serial-number')
         (result_code, p_out, p_err) = self.execute("dmidecode --string baseboard-asset-tag")
         if result_code == 0:
             data['baseboard-asset-tag'] = str(p_out)
         else:
-            self.logger.error('[ReadBiosInfo] Error occurred while retrieving baseboard-asset-tag')
+            self.logger.error('Error occurred while retrieving baseboard-asset-tag')
 
         # Resulting data is empty! Task failed.
         code = self.message_code.TASK_PROCESSED.value
