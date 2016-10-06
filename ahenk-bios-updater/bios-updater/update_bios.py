@@ -31,24 +31,24 @@ class UpdateBios(AbstractPlugin):
             (result_code, p_out, p_err) = self.execute("flashrom -r {} -p internal".format(filename), shell=True)
             if result_code == 0:
                 message += "Varolan BIOS, {} dosyasına yedeklendi. ".format(filename)
-                self.logger.debug("[BIOS UPDATER] Existing BIOS has been read to file: {}".format(filename))
+                self.logger.debug("Existing BIOS has been read to file: {}".format(filename))
             else:
-                self.logger.error("[BIOS UPDATER] BIOS could not be backed up.")
+                self.logger.error("BIOS could not be backed up.")
                 message += "Varolan BIOS yedeklenirken hata oluştu: {} ".format(str(p_err))
                 code = self.message_code.TASK_ERROR.value
 
         # Download BIOS file from provided URL
         (result_code, p_out, p_err) = self.execute("wget {} -O /tmp/newbios.rom".format(url), shell=True)
         if result_code == 0:
-            self.logger.debug("[BIOS UPDATER] Downloaded BIOS ROM from URL: {0}".format(url))
+            self.logger.debug("Downloaded BIOS ROM from URL: {0}".format(url))
             # Flash downloaded file
-            self.logger.debug("[BIOS UPDATER] Flashing ROM into BIOS.")
+            self.logger.debug("Flashing ROM into BIOS.")
             (result_code, p_out, p_err) = self.execute("flashrom --programmer internal -w /tmp/newbios.rom", shell=True)
             if result_code == 0:
-                self.logger.debug("[BIOS UPDATER] Flashed ROM into BIOS successfully.")
+                self.logger.debug("Flashed ROM into BIOS successfully.")
                 message += "BIOS başarıyla güncellendi. "
             else:
-                self.logger.error("[BIOS UPDATER] Error occurred while flashing ROM {0}".format(str(p_err)))
+                self.logger.error("Error occurred while flashing ROM {0}".format(str(p_err)))
                 message += "BIOS güncellenirken hata oluştu: {} ".format(str(p_err))
                 code = self.message_code.TASK_ERROR.value
         else:
