@@ -11,7 +11,7 @@
       <command
             categoryId="tr.org.liderahenk.liderconsole.commands.category"
             id="tr.org.liderahenk.liderconsole.commands.BiosUpdaterTask"            
-            name="%command.task">
+            name="%command.update.bios.task">
       </command>
    </extension>
    
