@@ -92,7 +92,7 @@
 					<instructions>
 						<_removeheaders>Import-Service,Export-Service</_removeheaders>
 						<Bundle-SymbolicName>lider-bios-updater</Bundle-SymbolicName>
-						<Bundle-Version>1.0.0</Bundle-Version>
+						<Bundle-Version>1.0.0-alfa</Bundle-Version>
 						<Import-Package>!tr.org.liderahenk.biosupdater.*, *</Import-Package>
 					</instructions>
 				</configuration>
