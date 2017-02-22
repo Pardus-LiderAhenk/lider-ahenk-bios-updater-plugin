@@ -204,7 +204,7 @@ public class BiosUpdaterTaskDialog extends DefaultTaskDialog {
 			task.setDnList(dnList);
 			task.setDnType(DNType.AHENK);
 			task.setPluginName("bios-updater");
-			task.setPluginVersion("1.0.0");
+			task.setPluginVersion(BiosUpdaterConstants.PLUGIN_VERSION);
 			task.setParameterMap(new HashMap<String, Object>());
 			TaskRestUtils.execute(task);
 		} catch (Exception e) {
